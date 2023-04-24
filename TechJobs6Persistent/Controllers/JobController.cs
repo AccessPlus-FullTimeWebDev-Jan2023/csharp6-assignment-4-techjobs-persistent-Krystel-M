@@ -28,18 +28,34 @@ namespace TechJobs6Persistent.Controllers
 
             return View(jobs);
         }
-
+        //------------------------------------------------------------------
         public IActionResult Add()
         {
-            return View();
+            List<Employer> employers = context.Employers.ToList();
+
+            AddJobViewModel addJobViewModel = new AddJobViewModel(employers);
+            return View(addJobViewModel);
         }
 
         [HttpPost]
-        public IActionResult ProcessAddJobForm()
+        //------------------------------------------------------------------------
+        public IActionResult Add(AddJobViewModel addJobViewModel)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                Employer theEmp = context.Employers.Find(addJobViewModel.EmployerId);
+                Job newJob = new Job
+                {
+                    Name = addJobViewModel.JobName,
+                    Employer = theEmp
+                };
+                context.Jobs.Add(newJob);
+                context.SaveChanges();
+                return Redirect("/Job");
+            }
+            return View(addJobViewModel);
         }
-
+        //---------------------------------------------------------------------------------
         public IActionResult Delete()
         {
             ViewBag.jobs = context.Jobs.ToList();
@@ -65,7 +81,7 @@ namespace TechJobs6Persistent.Controllers
         {
             Job theJob = context.Jobs.Include(j => j.Employer).Include(j => j.Skills).Single(j => j.Id == id);
 
-            JobDetailViewModel jobDetailViewModel = new JobDetailViewModel(theJob);
+           JobDetailViewModel jobDetailViewModel = new JobDetailViewModel(theJob);
 
             return View(jobDetailViewModel);
 
